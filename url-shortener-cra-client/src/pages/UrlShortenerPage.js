@@ -1,20 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Container, Typography, TextField, Paper, Stack, Button
 } from '@mui/material';
 import { generateShortcode, validateUrl } from '../utils/validators';
-import { useNavigate } from 'react-router-dom';
 
 const UrlShortenerPage = () => {
-  const navigate = useNavigate();
   const [inputs, setInputs] = useState([{ longUrl: '', validity: '', shortcode: '' }]);
   const [results, setResults] = useState([]);
-
-  useEffect(() => {
-    if (!localStorage.getItem("authToken")) {
-      navigate("/");
-    }
-  }, [navigate]);
 
   const handleChange = (index, field, value) => {
     const newInputs = [...inputs];
@@ -32,15 +24,26 @@ const UrlShortenerPage = () => {
     const stored = JSON.parse(localStorage.getItem("urlData")) || {};
     const newResults = inputs.map(input => {
       if (!validateUrl(input.longUrl)) return null;
+
       const shortcode = input.shortcode?.trim() || generateShortcode();
       if (stored[shortcode]) return null;
+
       const createdAt = Date.now();
       const validityMinutes = parseInt(input.validity) || 30;
       const expiresAt = createdAt + validityMinutes * 60000;
-      const entry = { longUrl: input.longUrl, createdAt, expiresAt, shortcode, clicks: [] };
+
+      const entry = {
+        longUrl: input.longUrl.startsWith('http') ? input.longUrl : `https://${input.longUrl}`,
+        createdAt,
+        expiresAt,
+        shortcode,
+        clicks: []
+      };
+
       stored[shortcode] = entry;
       return entry;
     }).filter(Boolean);
+
     localStorage.setItem("urlData", JSON.stringify(stored));
     setResults(newResults);
   };
@@ -68,7 +71,12 @@ const UrlShortenerPage = () => {
           <Typography variant="h6">Shortened URLs:</Typography>
           {results.map((r, i) => (
             <Paper key={i} sx={{ p: 2, mt: 1 }}>
-              <Typography>Short URL: <a href={`/${r.shortcode}`}>{window.location.origin}/{r.shortcode}</a></Typography>
+              <Typography>
+                Short URL:{" "}
+                <a href={`/${r.shortcode}`} target="_blank" rel="noopener noreferrer">
+                  {window.location.origin}/{r.shortcode}
+                </a>
+              </Typography>
               <Typography>Expires At: {new Date(r.expiresAt).toLocaleString()}</Typography>
             </Paper>
           ))}

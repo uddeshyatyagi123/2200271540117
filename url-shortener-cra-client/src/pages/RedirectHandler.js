@@ -1,28 +1,33 @@
-import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const RedirectHandler = () => {
   const { shortcode } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("urlData")) || {};
-    const entry = stored[shortcode];
+    const data = JSON.parse(localStorage.getItem("urlData") || "{}");
+    const entry = data[shortcode];
 
     if (entry && Date.now() < entry.expiresAt) {
+      // Update click log
+      entry.clicks = entry.clicks || [];
       entry.clicks.push({
-        timestamp: new Date().toISOString(),
-        source: document.referrer || "direct",
-        geoLocation: "Unknown",
+        timestamp: Date.now(),
+        referrer: document.referrer
       });
-      stored[shortcode] = entry;
-      localStorage.setItem("urlData", JSON.stringify(stored));
+
+      data[shortcode] = entry;
+      localStorage.setItem("urlData", JSON.stringify(data));
+
       window.location.href = entry.longUrl;
     } else {
-      alert("This link is invalid or expired.");
+      alert("Link not found or expired.");
+      navigate("/");
     }
-  }, [shortcode]);
+  }, [shortcode, navigate]);
 
-  return <p className="text-center mt-10">Redirecting...</p>;
+  return null;
 };
 
 export default RedirectHandler;

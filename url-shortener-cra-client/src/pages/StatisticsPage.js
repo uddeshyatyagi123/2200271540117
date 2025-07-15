@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+  Container, Typography, Paper, Divider
+} from '@mui/material';
 
 const StatisticsPage = () => {
   const [data, setData] = useState([]);
@@ -9,25 +12,31 @@ const StatisticsPage = () => {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Shortened URL Statistics</h1>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>Shortened URL Statistics</Typography>
+      {data.length === 0 && <Typography>No shortened URLs found.</Typography>}
+
       {data.map((url, i) => (
-        <div key={i} className="bg-white shadow p-4 rounded mb-4">
-          <p>Short URL: {window.location.origin}/{url.shortcode}</p>
-          <p>Created At: {new Date(url.createdAt).toLocaleString()}</p>
-          <p>Expires At: {new Date(url.expiresAt).toLocaleString()}</p>
-          <p>Clicks: {url.clicks.length}</p>
-          <div className="mt-2">
-            <p className="font-semibold">Click Details:</p>
-            {url.clicks.map((click, idx) => (
-              <p key={idx} className="text-sm">
-                {click.timestamp} - {click.source} - {click.geoLocation}
-              </p>
-            ))}
-          </div>
-        </div>
+        <Paper key={i} sx={{ p: 2, mb: 3 }}>
+          <Typography><strong>Short URL:</strong> {window.location.origin}/{url.shortcode}</Typography>
+          <Typography><strong>Created At:</strong> {new Date(url.createdAt).toLocaleString()}</Typography>
+          <Typography><strong>Expires At:</strong> {new Date(url.expiresAt).toLocaleString()}</Typography>
+          <Typography><strong>Total Clicks:</strong> {url.clicks.length}</Typography>
+
+          {url.clicks.length > 0 && (
+            <>
+              <Typography sx={{ mt: 1 }}><strong>Click Details:</strong></Typography>
+              <Divider sx={{ my: 1 }} />
+              {url.clicks.map((click, idx) => (
+                <Typography key={idx} variant="body2">
+                  {new Date(click.timestamp).toLocaleString()}
+                </Typography>
+              ))}
+            </>
+          )}
+        </Paper>
       ))}
-    </div>
+    </Container>
   );
 };
 

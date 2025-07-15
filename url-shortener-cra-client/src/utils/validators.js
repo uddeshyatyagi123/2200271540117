@@ -1,12 +1,13 @@
 export const validateUrl = (url) => {
   try {
-    new URL(url);
+    const fixed = url.startsWith('http') ? url : `https://${url}`;
+    new URL(fixed);
     return true;
-  } catch (_) {
+  } catch {
     return false;
   }
 };
 
 export const generateShortcode = () => {
-  return Math.random().toString(36).substr(2, 6);
+  return Math.random().toString(36).substring(2, 8);
 };
